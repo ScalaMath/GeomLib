@@ -1,0 +1,15 @@
+# Scala SBT
+target/
+*.class
+.bsp
+
+# IntelliJ IDEA
+*.iml
+*.ipr
+*.iws
+.idea/
+out/
+
+# Directories
+.DS_Store
+.directory
