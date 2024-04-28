@@ -208,6 +208,8 @@ class Rect2Suite extends AnyFunSuite {
 
   // TODO: Multiplication
 
+  // TODO: isCongruent
+
   test("Rectangle equals approx") {
     val rect1 = Rect2(2.0f, 1.0f, 4.0f, 3.0f)
     val rect2 = Rect2(1.9999999f, 1.0000001f, 4.0000001f, 2.9999999f)

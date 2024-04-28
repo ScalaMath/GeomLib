@@ -359,26 +359,14 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
 
   def *(m: Mat2f): Rect2 = this.inverseTransform(m)
 
-  /**
-   * Checks if this rectangle is approximately equivalent to the given one using an internal epsilon.
-   *
-   * Unlike the `==` operator, this method will treat equivalent rectangles with a different origin [[position]] and a [[size]] of a different sign to be equal.
-   *
-   * @param rect The other rectangle.
-   * @return True if this rectangle is approximately equivalent to the given one, otherwise false.
-   */
-  def ~=(rect: Rect2): Boolean = (this.left ~= rect.left) && (this.right ~= rect.right) && (this.top ~= rect.top) && (this.bottom ~= rect.bottom)
+  def isCongruentTo(rect: Rect2): Boolean = (this.left ~= rect.left) && (this.right ~= rect.right) && (this.top ~= rect.top) && (this.bottom ~= rect.bottom)
 
-  /**
-   * Checks if this rectangle is approximately equivalent to the given one using an internal epsilon.
-   *
-   * Unlike the `equals` method, this method will treat equivalent rectangles with a different origin [[position]] and a [[size]] of a different sign to be equal.
-   *
-   * This method can be used in place of the `~=` operator for better interoperability with Java.
-   *
-   * @param rect The other rectangle.
-   * @return True if this rectangle is approximately equivalent to the given one, otherwise false.
-   */
+  def ~=(x: Float, y: Float, width: Float, height: Float): Boolean = (this.x ~= x) && (this.y ~= y) && (this.width ~= width) && (this.height ~= height)
+
+  def equalsApprox(x: Float, y: Float, width: Float, height: Float): Boolean = this ~= (x, y, width, height)
+
+  def ~=(rect: Rect2): Boolean = this ~= (rect.x, rect.y, rect.width, rect.height)
+
   def equalsApprox(rect: Rect2): Boolean = this ~= rect
 }
 
