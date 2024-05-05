@@ -1,6 +1,6 @@
 package io.github.scalamath.geomlib
 
-import io.github.scalamath.vecmatlib.{Mat2f, Mat2x3f, Vec2f}
+import io.github.scalamath.vecmatlib.{Mat2f, Mat2x3f, Mat3f, Vec2f}
 import org.scalatest.funsuite.AnyFunSuite
 
 class Rect2Suite extends AnyFunSuite {
@@ -149,8 +149,23 @@ class Rect2Suite extends AnyFunSuite {
     assert(rect1.encloses(rect4))
   }
 
-  ignore("Grow rectangle") {
-    // TODO: Grow rectangle
+  test("Grow rectangle") {
+    val rect1 = Rect2(2.0f, 1.0f, 4.0f, 3.0f)
+    val res = Rect2(1.5f, 1.5f, 5.5f, 2.0f)
+    assert(rect1.grow(0.5f, -0.5f, 1.0f, -0.5f) == res)
+  }
+
+  test("Grow rectangle on all sides") {
+    val rect1 = Rect2(2.0f, 1.0f, 4.0f, 3.0f)
+    val res1 = Rect2(0.5f, -0.5f, 7.0f, 6.0f)
+    assert(rect1.grow(1.5f) == res1)
+    val res2 = Rect2(3.0f, 2.0f, 2.0f, 1.0f)
+    assert(rect1.grow(-1.0f) == res2)
+    val rect2 = Rect2(6.0f, 4.0f, -4.0f, -3.0f)
+    val res3 = Rect2(5.0f, 3.0f, -2.0f, -1.0f)
+    assert(rect2.grow(1.0f) == res3)
+    val res4 = Rect2(7.0f, 5.0f, -6.0f, -5.0f)
+    assert(rect2.grow(-1.0f) == res4)
   }
 
   test("Expand rectangle to a point") {
@@ -158,7 +173,7 @@ class Rect2Suite extends AnyFunSuite {
     val res1 = Rect2(0.0f, 0.0f, 10.0f, 2.0f)
     assert(rect1.expandTo(10.0f, 0.0f) == res1)
     val res2 = Rect2(-5.0f, 0.0f, 10.0f, 5.0f)
-    assert(res1.expandTo(-5.0f, 5.0f) == res2)
+    assert(rect1.expandTo(-5.0f, 5.0f) == res2)
     val rect2 = Rect2(5.0f, 2.0f, -5.0f, -2.0f)
     assert(rect2.expandTo(10.0f, 0.0f) == res1)
   }
@@ -188,34 +203,47 @@ class Rect2Suite extends AnyFunSuite {
     val rotation = Mat2f.rotation(math.Pi / 2.0)
     val rect = Rect2(4.0f, 3.0f)
     val res1 = Rect2(-3.0f, 0.0f, 3.0f, 4.0f)
-    assert(rect.transform(rotation) == res1)
+    assert(rotation * rect == res1)
     val scaling = Mat2f.scaling(2.0f, 3.0f)
     val res2 = Rect2(8.0f, 9.0f)
-    assert(rect.transform(scaling) == res2)
+    assert(scaling * rect == res2)
   }
 
   test("Transform rectangle with a 2x3 matrix") {
     val translation = Mat2x3f.translation(2.0f, 3.0f)
     val rect = Rect2(2.0f, 1.0f, 4.0f, 2.0f)
     val res1 = Rect2(4.0f, 4.0f, 4.0f, 2.0f)
-    assert(rect.transform(translation) == res1)
+    assert(translation * rect == res1)
     val transform = Mat2f.rotation(math.Pi / 2.0) * translation
     val res2 = Rect2(-6.0f, 4.0f, 2.0f, 4.0f)
-    assert(rect.transform(transform) == res2)
+    assert(transform * rect == res2)
+  }
+
+  test("Transform a rectangle with a 3x3 matrix") {
+    val translation = Mat3f.translation(2.0f, 3.0f)
+    val rect = Rect2(2.0f, 1.0f, 4.0f, 2.0f)
+    val res1 = Rect2(4.0f, 4.0f, 4.0f, 2.0f)
+    assert(translation * rect == res1)
+    val transform = Mat3f.rotationZ(math.Pi / 2.0) * translation
+    val res2 = Rect2(-6.0f, 4.0f, 2.0f, 4.0f)
+    assert(transform * rect == res2)
   }
 
   // TODO: Inverse transform
 
-  // TODO: Multiplication
-
-  // TODO: isCongruent
+  test("Check if two rectangles are congruent") {
+    val rect1 = Rect2(2.0f, 1.0f, 4.0f, 3.0f)
+    val rect2 = Rect2(6.0f, 4.0f, -4.0f, -3.0f)
+    assert(rect1.isCongruentTo(rect2))
+    assert(rect1.isCongruentTo(rect1))
+  }
 
   test("Rectangle equals approx") {
     val rect1 = Rect2(2.0f, 1.0f, 4.0f, 3.0f)
     val rect2 = Rect2(1.9999999f, 1.0000001f, 4.0000001f, 2.9999999f)
     val rect3 = Rect2(6.0f, 4.0f, -4.0f, -3.0f)
     assert(rect1 ~= rect2)
-    assert(rect1 ~= rect3)
+    assert(!(rect1 ~= rect3))
   }
 
   test("Construct rectangle from points") {

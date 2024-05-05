@@ -1,7 +1,7 @@
 package io.github.scalamath.geomlib
 
 import io.github.scalamath.FloatEqualsApprox
-import io.github.scalamath.vecmatlib.{Mat2f, Mat2x3f, Vec2f}
+import io.github.scalamath.vecmatlib.{Mat2f, Mat2x3f, Mat3f, Vec2f}
 
 /**
  * A 2D axis-aligned bounding box using floating point coordinates.
@@ -84,7 +84,7 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
    * Returns this rectangle's end point.
    * Corresponds to the rectangle's [[topRight]] corner if the [[size]] of the rectangle is positive.
    *
-   * Equivalent to [[position]] + [[size]].
+   * Equivalent to [[position]]` + `[[size]].
    *
    * @return The end point of this rectangle.
    */
@@ -93,7 +93,7 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
   /**
    * Returns the center point of this rectangle.
    *
-   * Equivalent to [[position]] + ([[size]] / 2).
+   * Equivalent to [[position]]` + `[[size]]` / 2`.
    *
    * @return The center point of this rectangle.
    */
@@ -262,13 +262,33 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
    * @see [[intersects]]
    */
   def intersection(rect: Rect2): Rect2 = {
-    // TODO: Avoid doing this twice
-    if(!this.intersects(rect, includeBorders = true)) {
-      Rect2()
-    } else {
+    if(this.intersects(rect, includeBorders = true)) {
       Rect2.fromPoints(math.max(this.left, rect.left), math.max(this.bottom, rect.bottom), math.min(this.right, rect.right), math.min(this.top, rect.top))
+    } else {
+      Rect2()
     }
   }
+
+  def intersectsLine(point: Vec2f, direction: Vec2f): Boolean = {
+    val t1 = (this.position - point) / direction
+    val t2 = (this.end - point) / direction
+    math.max(math.min(t1.x, t2.x), math.min(t1.y, t2.y)) <= math.min(math.max(t1.x, t2.x), math.max(t1.y, t2.y))
+  }
+
+  def intersectsLine(m: Float, q: Float): Boolean = this.intersectsLine(Vec2f(0.0f, q), Vec2f(m, 1.0f))
+
+  def lineIntersection(point: Vec2f, direction: Vec2f): Vec2f = {
+    val t0 = (this.position - point) / direction
+    val t1 = (this.end - point) / direction
+    val d = math.max(math.min(t0.x, t1.x), math.min(t0.y, t1.y))
+    if(d <= math.min(math.max(t0.x, t1.x), math.max(t0.y, t1.y))) {
+      point + direction * d
+    } else {
+      Vec2f(Float.NaN, Float.NaN)
+    }
+  }
+
+  def lineIntersection(m: Float, q: Float): Vec2f = this.lineIntersection(Vec2f(0.0f, q), Vec2f(m, 1.0f))
 
   /**
    * Returns a rectangle equivalent to this one with non-negative [[size]] and its [[position]] being the bottom left corner.
@@ -287,8 +307,10 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
   def encloses(rect: Rect2): Boolean = this.left <= rect.left && this.right >= rect.right && this.top >= rect.top && this.bottom <= rect.bottom
 
   /**
-   * Returns a copy of this rectangle with its [[left]], [[top]], [[right]], and [[bottom]] sides extended by the given amount.
+   * Extends all the sides of this rectangle by the given amounts and returns the result.
    * A negative amount shrinks the rectangle.
+   *
+   * If the size of this rectangle is negative on one of the axes, a positive amount will shrink it and a negative amount will grow it.
    *
    * @param left Amount by which the left side should grow.
    * @param top Amount by which the top side should grow.
@@ -299,8 +321,10 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
   def grow(left: Float, top: Float, right: Float, bottom: Float): Rect2 = Rect2(this.x - left, this.y - top, this.width + left + right, this.height + top + bottom)
 
   /**
-   * Returns a copy of this rectangle with all sides extended by the given amount.
+   * Extends all the sides of this rectangle by the given amount and returns the result.
    * A negative amount shrinks the rectangle.
+   *
+   * If the size of this rectangle is negative on one of the axes, a positive amount will shrink it and a negative amount will grow it.
    *
    * @param amount Amount by which the rectangle should grow.
    * @return A copy of this rectangle with all sides extended by the given amount.
@@ -339,35 +363,128 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
    */
   def merge(rect: Rect2): Rect2 = Rect2.fromPoints(math.min(this.left, rect.left), math.min(this.bottom, rect.bottom), math.max(this.right, rect.right), math.max(this.top, rect.top))
 
+  /**
+   * Transforms this rectangle by the given matrix under the assumption that it is a valid transformation matrix and returns the result.
+   *
+   * This method can be used in place of the `*` operator for better interoperability with Java.
+   *
+   * @param m A 2x2 transformation matrix.
+   * @return The resulting rectangle.
+   */
   def transform(m: Mat2f): Rect2 = {
     val x = m.col0 * this.width
     val y = m.col1 * this.height
     val pos = m * this.position
-    // TODO: Creates too much garbage
-    Rect2(pos, 0.0f, 0.0f).expandTo(pos + x).expandTo(pos + y).expandTo(pos + x + y)
+    Rect2.fromPoints(pos, pos + x + y)
   }
 
+  /**
+   * Transforms this rectangle by the given matrix under the assumption that it is a valid transformation matrix and returns the result.
+   *
+   * This method can be used in place of the `*` operator for better interoperability with Java.
+   *
+   * @param m A 2x3 transformation matrix.
+   * @return The resulting rectangle.
+   */
   def transform(m: Mat2x3f): Rect2 = {
     val x = m.col0 * this.width
     val y = m.col1 * this.height
     val pos = m * (this.position, 1.0f)
-    // TODO: Creates too much garbage
-    Rect2(pos, 0.0f, 0.0f).expandTo(pos + x).expandTo(pos + y).expandTo(pos + x + y)
+    Rect2.fromPoints(pos, pos + x + y)
   }
 
+  /**
+   * Transforms this rectangle by the given matrix under the assumption that it is a valid transformation matrix and returns the result.
+   *
+   * This method can be used in place of the `*` operator for better interoperability with Java.
+   *
+   * @param m A 3x3 transformation matrix.
+   * @return The resulting rectangle.
+   */
+  def transform(m: Mat3f): Rect2 = {
+    val x = m.col0.xy * this.width
+    val y = m.col1.xy * this.height
+    val pos = (m * (this.position, 1.0f)).xy
+    Rect2.fromPoints(pos, pos + x + y)
+  }
+
+  /**
+   * Inversely transforms this rectangle by the given matrix under the assumption that it is a valid transformation matrix and returns the result.
+   *
+   * This method can be used in place of the `*` operator for better interoperability with Java.
+   *
+   * `rect.inverseTransform(matrix)` is equivalent to `rect.transform(matrix.inverse)`.
+   *
+   * @param m A 2x2 transformation matrix.
+   * @return The resulting rectangle.
+   */
   def inverseTransform(m: Mat2f): Rect2 = this.transform(m.inverse)
 
+  /**
+   * Inversely transforms this rectangle by the given matrix under the assumption that it is a valid transformation matrix and returns the result.
+   *
+   * This method can be used in place of the `*` operator for better interoperability with Java.
+   *
+   * `rect.inverseTransform(matrix)` is equivalent to `rect.transform(matrix.inverse)`.
+   *
+   * @param m A 3x3 transformation matrix.
+   * @return The resulting rectangle.
+   */
+  def inverseTransform(m: Mat3f): Rect2 = this.transform(m.inverse)
+
+  /**
+   * Inversely transforms this rectangle by the given matrix under the assumption that it is a valid transformation matrix and returns the result.
+   *
+   * `rect * matrix` is equivalent to `matrix.inverse * rect`.
+   *
+   * @param m A 2x2 transformation matrix.
+   * @return The resulting rectangle.
+   */
   def *(m: Mat2f): Rect2 = this.inverseTransform(m)
 
+  /**
+   * Inversely transforms this rectangle by the given matrix under the assumption that it is a valid transformation matrix and returns the result.
+   *
+   * `rect * matrix` is equivalent to `matrix.inverse * rect`.
+   *
+   * @param m A 3x3 transformation matrix.
+   * @return The resulting rectangle.
+   */
+  def *(m: Mat3f): Rect2 = this.inverseTransform(m)
+
+  /**
+   * Checks if this rectangle is congruent to the given one.
+   *
+   * Unlike [[equalsApprox]], this method returns true for rectangles with different origins and sizes if they represent the same rectangle.
+   *
+   * @param rect The other rectangle.
+   * @return True if this rectangle is congruent to the given one, otherwise false.
+   */
   def isCongruentTo(rect: Rect2): Boolean = (this.left ~= rect.left) && (this.right ~= rect.right) && (this.top ~= rect.top) && (this.bottom ~= rect.bottom)
 
-  def ~=(x: Float, y: Float, width: Float, height: Float): Boolean = (this.x ~= x) && (this.y ~= y) && (this.width ~= width) && (this.height ~= height)
+  /**
+   * Checks if this rectangle is approximately equal to the given one by checking if positions and sizes are approximately equal using an internal epsilon.
+   *
+   * Unlike [[isCongruentTo]], this operator returns false if the given rectangle has a different origin or size even if it represents a rectangle equal to this one.
+   *
+   * @param rect The other rectangle.
+   * @return True if this rectangle is approximately equal to the given one, otherwise false.
+   */
+  def ~=(rect: Rect2): Boolean = (this.x ~= rect.x) && (this.y ~= rect.y) && (this.width ~= rect.width) && (this.height ~= rect.height)
 
-  def equalsApprox(x: Float, y: Float, width: Float, height: Float): Boolean = this ~= (x, y, width, height)
-
-  def ~=(rect: Rect2): Boolean = this ~= (rect.x, rect.y, rect.width, rect.height)
-
+  /**
+   * Checks if this rectangle is approximately equal to the given one by checking if positions and sizes are approximately equal using an internal epsilon.
+   *
+   * This method can be used in place of the `~=` operator for better interoperability with Java.
+   *
+   * Unlike [[isCongruentTo]], this method returns false if the given rectangle has a different origin or size even if it represents a rectangle equal to this one.
+   *
+   * @param rect The other rectangle.
+   * @return True if this rectangle is approximately equal to the given one, otherwise false.
+   */
   def equalsApprox(rect: Rect2): Boolean = this ~= rect
+
+  def toInt: Rect2i = Rect2i(this.x.toInt, this.y.toInt, this.width.toInt, this.height.toInt)
 }
 
 /**
@@ -456,13 +573,51 @@ object Rect2 {
    */
   def fromPoints(p1: Vec2f, p2: Vec2f): Rect2 = this.fromPoints(p1.x, p1.y, p2.x, p2.y)
 
+  /**
+   * Allows to use the `*` operator between a [[Mat2f]] and a [[Rect2]].
+   *
+   * @param self The matrix.
+   */
   implicit class Transform2x2(val self: Mat2f) extends AnyVal {
 
+    /**
+     * Transforms the given rectangle by this matrix under the assumption that it is a valid transformation matrix and returns the result.
+     *
+     * @param rect The rectangle.
+     * @return The resulting rectangle.
+     */
     def *(rect: Rect2): Rect2 = rect.transform(self)
   }
 
+  /**
+   * Allows to use the `*` operator between a [[Mat2x3f]] and a [[Rect2]].
+   *
+   * @param self The matrix.
+   */
   implicit class Transform2x3(val self: Mat2x3f) extends AnyVal {
 
+    /**
+     * Transforms the given rectangle by this matrix under the assumption that it is a valid transformation matrix and returns the result.
+     *
+     * @param rect The rectangle.
+     * @return The resulting rectangle.
+     */
+    def *(rect: Rect2): Rect2 = rect.transform(self)
+  }
+
+  /**
+   * Allows to use the `*` operator between a [[Mat3f]] and a [[Rect2]].
+   *
+   * @param self The matrix.
+   */
+  implicit class Transform3x3(val self: Mat3f) extends AnyVal {
+
+    /**
+     * Transforms the given rectangle by this matrix under the assumption that it is a valid transformation matrix and returns the result.
+     *
+     * @param rect The rectangle.
+     * @return The resulting rectangle.
+     */
     def *(rect: Rect2): Rect2 = rect.transform(self)
   }
 }
