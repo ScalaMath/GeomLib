@@ -440,6 +440,14 @@ case class AABB(x: Float, y: Float, z: Float, width: Float, height: Float, depth
   )
 
   /**
+   * Returns a sphere that completely encloses this AABB.
+   * The center of the sphere corresponds to the [[center]] of the AABB, its radius corresponds to the distance from the center to the corners of the AABB.
+   *
+   * @return A sphere that completely encloses this AABB.
+   */
+  def boundingSphere: Sphere = Sphere(this.center, this.x, this.y, this.z)
+
+  /**
    * Transforms this AABB by multiplying it with the given matrix under the assumption that it is a valid transformation matrix and returns the result.
    *
    * This method can be used in place of the `*` operator for better interoperability with Java.

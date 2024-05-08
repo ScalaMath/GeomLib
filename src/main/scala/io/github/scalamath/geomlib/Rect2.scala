@@ -364,6 +364,14 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
   def merge(rect: Rect2): Rect2 = Rect2.fromPoints(math.min(this.left, rect.left), math.min(this.bottom, rect.bottom), math.max(this.right, rect.right), math.max(this.top, rect.top))
 
   /**
+   * Returns a circle that completely encloses this rectangle.
+   * The center of the circle corresponds to the [[center]] of the rectangle, its radius corresponds to the distance from the center to the corners of the rectangle.
+   *
+   * @return A circle that completely encloses this rectangle.
+   */
+  def boundingCircle: Circle = Circle(this.center, this.x, this.y)
+
+  /**
    * Transforms this rectangle by the given matrix under the assumption that it is a valid transformation matrix and returns the result.
    *
    * This method can be used in place of the `*` operator for better interoperability with Java.
@@ -484,6 +492,11 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
    */
   def equalsApprox(rect: Rect2): Boolean = this ~= rect
 
+  /**
+   * Casts this rectangle to a rectangle using integer coordinates.
+   *
+   * @return This rectangle cast to int.
+   */
   def toInt: Rect2i = Rect2i(this.x.toInt, this.y.toInt, this.width.toInt, this.height.toInt)
 }
 
