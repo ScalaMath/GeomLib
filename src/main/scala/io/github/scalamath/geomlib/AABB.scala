@@ -355,7 +355,7 @@ case class AABB(x: Float, y: Float, z: Float, width: Float, height: Float, depth
   /**
    * Returns the point of intersection between the given line and this AABB.
    *
-   * If the line intersects the AABB in two points, the resulting point will be the first one in the direction of the line.
+   * If the line intersects the AABB in two points, the resulting point will be the first one according to the direction of the line.
    *
    * If the given line does not intersect this AABB, all the components resulting vector will be `NaN`.
    * The validity of the result can be checked with the [[intersectsLine]] method.
@@ -539,6 +539,13 @@ case class AABB(x: Float, y: Float, z: Float, width: Float, height: Float, depth
    */
   def *(m: Mat4f): AABB = this.inverseTransform(m)
 
+  /**
+   * Returns the support point of this AABB for a collision with the given normal.
+   * This point is the one that is the furthest away in the given direction.
+   *
+   * @param normal The collision normal.
+   * @return The support point.
+   */
   def support(normal: Vec3f): Vec3f = {
     val halfExtents = this.size * 0.5f
     halfExtents * normal.sign + this.position + halfExtents
@@ -557,7 +564,7 @@ case class AABB(x: Float, y: Float, z: Float, width: Float, height: Float, depth
   /**
    * Checks if this AABB is approximately equal to the given one by checking if positions and sizes are approximately equal using an internal epsilon.
    *
-   * Unlike [[isCongruentTo]], this operator returns false if the given AABB has a different origin or size even if it represents an AABB equal to this one.
+   * Unlike [[isCongruentTo]], this operator returns false if the given AABB has a different origin or size even if it represents an AABB that is equivalent to this one.
    *
    * @param aabb The other AABB.
    * @return True if this AABB is approximately equal to the given one, otherwise false.
@@ -569,7 +576,7 @@ case class AABB(x: Float, y: Float, z: Float, width: Float, height: Float, depth
    *
    * This method can be used in place of the `~=` operator for better interoperability with Java.
    *
-   * Unlike [[isCongruentTo]], this method returns false if the given AABB has a different origin or size even if it represents an AABB equal to this one.
+   * Unlike [[isCongruentTo]], this method returns false if the given AABB has a different origin or size even if it represents an AABB that is equivalent to this one.
    *
    * @param aabb The other AABB.
    * @return True if this AABB is approximately equal to the given one, otherwise false.

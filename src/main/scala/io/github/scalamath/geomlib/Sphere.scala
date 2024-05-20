@@ -154,9 +154,9 @@ case class Sphere(x: Float, y: Float, z: Float, radius: Float) {
    */
   def containsPoint(point: Vec3f, includeSurface: Boolean): Boolean = {
     if(includeSurface) {
-      this.center.distanceSquaredTo(point) <= this.radiusSquared
+      point.distanceSquaredTo(this.x, this.y, this.z) <= this.radiusSquared
     } else {
-      this.center.distanceSquaredTo(point) < this.radiusSquared
+      point.distanceSquaredTo(this.x, this.y, this.z) < this.radiusSquared
     }
   }
 
@@ -324,7 +324,7 @@ object Sphere {
    * @param center The center of the sphere.
    * @param x The x coordinate of a point on the surface of the sphere.
    * @param y The y coordinate of a point on the surface of the sphere.
-   * @param y The z coordinate of a point on the surface of the sphere.
+   * @param z The z coordinate of a point on the surface of the sphere.
    * @return The newly instantiated sphere.
    */
   def apply(center: Vec3f, x: Float, y: Float, z: Float): Sphere = new Sphere(center, x, y, z)

@@ -199,6 +199,12 @@ class Rect2Suite extends AnyFunSuite {
     assert(rect1.merge(rect3) == res)
   }
 
+  test("Get the bounding circle of a rectangle") {
+    val rect = Rect2(1.0f, 1.0f, 3.0f, 2.0f)
+    val circle = Circle(2.5f, 2.0f, math.sqrt(3.25).toFloat)
+    assert(rect.boundingCircle == circle)
+  }
+
   test("Transform rectangle with a 2x2 matrix") {
     val rotation = Mat2f.rotation(math.Pi / 2.0)
     val rect = Rect2(4.0f, 3.0f)
@@ -242,8 +248,15 @@ class Rect2Suite extends AnyFunSuite {
     val rect1 = Rect2(2.0f, 1.0f, 4.0f, 3.0f)
     val rect2 = Rect2(1.9999999f, 1.0000001f, 4.0000001f, 2.9999999f)
     val rect3 = Rect2(6.0f, 4.0f, -4.0f, -3.0f)
+    assert(rect1 != rect2)
     assert(rect1 ~= rect2)
     assert(!(rect1 ~= rect3))
+  }
+
+  test("Cast rectangle to int") {
+    val rect1 = Rect2(2.1f, 1.9f, 4.4f, 3.2f)
+    val rect2 = Rect2i(2, 1, 4, 3)
+    assert(rect1.toInt == rect2)
   }
 
   test("Construct rectangle from points") {

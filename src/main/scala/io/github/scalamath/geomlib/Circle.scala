@@ -1,6 +1,6 @@
 package io.github.scalamath.geomlib
 
-import io.github.scalamath.{FloatEqualsApprox, geomlib}
+import io.github.scalamath.FloatEqualsApprox
 import io.github.scalamath.vecmatlib.Vec2f
 
 /**
@@ -68,13 +68,29 @@ case class Circle(x: Float, y: Float, radius: Float) {
   def this(center: Vec2f, x: Float, y: Float) = this(center, center.distanceTo(x, y))
 
   /**
+   * Private constructor used as a helper to create a circle through three points.
+   *
+   * @param d D value.
+   * @param p1 The first point.
+   * @param p2 The second point.
+   * @param p3 The third point.
+   */
+  private def this(d: Float, p1: Vec2f, p2: Vec2f, p3: Vec2f) = this(
+    d * (p1.lengthSquared * (p2.y - p3.y) + p2.lengthSquared * (p3.y - p1.y) + p3.lengthSquared * (p1.y - p2.y)),
+    d * (p1.lengthSquared * (p3.x - p2.x) + p2.lengthSquared * (p1.x - p3.x) + p3.lengthSquared * (p2.x - p1.x)),
+    p1
+  )
+
+  /**
    * Constructs a circle passing through the three given points.
+   *
+   * The result is undefined if the given points lie on the same line.
    *
    * @param p1 The first point.
    * @param p2 The second point.
    * @param p3 The third point.
    */
-  def this(p1: Vec2f, p2: Vec2f, p3: Vec2f) = this(geomlib.lineIntersection((p1 + p2) / 2.0f, (p2 - p1).aspect, (p2 + p3) / 2.0f, (p3 - p2).aspect), p1)
+  def this(p1: Vec2f, p2: Vec2f, p3: Vec2f) = this(0.5f / (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)), p1, p2, p3)
 
   /**
    * Returns the center of the circle.
@@ -150,9 +166,9 @@ case class Circle(x: Float, y: Float, radius: Float) {
    */
   def containsPoint(point: Vec2f, includeCircumference: Boolean): Boolean = {
     if(includeCircumference) {
-      this.center.distanceSquaredTo(point) <= this.radiusSquared
+      point.distanceSquaredTo(this.x, this.y) <= this.radiusSquared
     } else {
-      this.center.distanceSquaredTo(point) < this.radiusSquared
+      point.distanceSquaredTo(this.x, this.y) < this.radiusSquared
     }
   }
 
@@ -180,7 +196,7 @@ case class Circle(x: Float, y: Float, radius: Float) {
    * @param point The point.
    * @return True if the given point lays on the circumference of this circle, otherwise false.
    */
-  def isPointOnCircumference(point: Vec2f): Boolean = this.center.distanceSquaredTo(point) ~= this.radiusSquared
+  def isPointOnCircumference(point: Vec2f): Boolean = point.distanceSquaredTo(this.x, this.y) ~= this.radiusSquared
 
   /**
    * Checks if this circle intersects the given one.
