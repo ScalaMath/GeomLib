@@ -236,7 +236,8 @@ class AABBSuite extends AnyFunSuite {
 
   test("Check if two AABBs are approximately equal") {
     val aabb1 = AABB(-1.0f, -2.0f, -3.0f, 3.0f, 2.0f, 1.0f)
-    val aabb2 = AABB(-1.00000001f, -1.99999999f, -2.99999999f, 3.00000001f, 2.00000001f, 0.999999999f)
+    val aabb2 = AABB(-1.0000001f, -1.9999999f, -2.9999999f, 3.0000001f, 2.0000001f, 0.99999999f)
+    assert(aabb1 != aabb2)
     assert(aabb1 ~= aabb2)
   }
 

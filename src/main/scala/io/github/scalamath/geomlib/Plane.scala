@@ -228,8 +228,22 @@ case class Plane(normal: Vec3f, d: Float) {
    */
   def intersection(plane1: Plane, plane2: Plane): Vec3f = (plane1.normal.cross(plane2.normal) * this.d + plane2.normal.cross(this.normal) * plane1.d + this.normal.cross(plane1.normal) * plane2.d) / this.normal.cross(plane1.normal).dot(plane2.normal)
 
+  /**
+   * Returns the projection of the given point onto this plane.
+   *
+   * @param point The point to project.
+   * @return The projection of the given point onto this plane.
+   */
   def project(point: Vec3f): Vec3f = point - this.normal * this.distanceTo(point)
 
+  /**
+   * Returns the projection of the point at the given coordinates onto this plane.
+   *
+   * @param x X coordinate of the point to project.
+   * @param y Y coordinate of the point to project.
+   * @param z Z coordinate of the point to project.
+   * @return The projection of the given point onto this plane.
+   */
   def project(x: Float, y: Float, z: Float): Vec3f = this.project(Vec3f(x, y, z))
 
   /**
@@ -270,8 +284,7 @@ case class Plane(normal: Vec3f, d: Float) {
    * @param m A 3x4 transformation matrix.
    * @return The resulting plane.
    */
-  def transform(m: Mat3x4f): Plane = Plane(Mat3f.fromColumns(m.col0, m.col1, m.col2).inverse.transposed * this.normal, m * (this.normal * this.d, 1.0f))
-  // TODO: Add a better way to extract a 3x3 submatrix from a 3x4 matrix
+  def transform(m: Mat3x4f): Plane = Plane(m.submatrix(3).inverse.transposed * this.normal, m * (this.normal * this.d, 1.0f))
 
   /**
    * Transforms this plane by the given matrix under the assumption that it is a valid transformation matrix and returns the result.

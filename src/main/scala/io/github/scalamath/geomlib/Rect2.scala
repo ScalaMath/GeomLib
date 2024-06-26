@@ -58,6 +58,13 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
   def this(width: Float, height: Float) = this(0.0f, 0.0f, width, height)
 
   /**
+   * Constructs a rectangle at position `(0, 0)` with the given size.
+   *
+   * @param size The size of the rectangle.
+   */
+  def this(size: Vec2f) = this(size.x, size.y)
+
+  /**
    * Constructs an empty rectangle, whose position and size are both `(0, 0)`.
    */
   def this() = this(0.0f, 0.0f)
@@ -269,14 +276,42 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
     }
   }
 
+  /**
+   * Checks if the given line, defined by a point and a direction, intersects this rectangle.
+   *
+   * @param point A point on the line.
+   * @param direction The direction of the line.
+   * @return True if the given line intersects this rectangle, otherwise false.
+   */
   def intersectsLine(point: Vec2f, direction: Vec2f): Boolean = {
     val t1 = (this.position - point) / direction
     val t2 = (this.end - point) / direction
     math.max(math.min(t1.x, t2.x), math.min(t1.y, t2.y)) <= math.min(math.max(t1.x, t2.x), math.max(t1.y, t2.y))
   }
 
-  def intersectsLine(m: Float, q: Float): Boolean = this.intersectsLine(Vec2f(0.0f, q), Vec2f(m, 1.0f))
+  /**
+   * Checks if a line of equation `y = mx + q` intersects this rectangle.
+   *
+   * @param m The slope of the line.
+   * @param q The y-intercept of the line.
+   * @return True if the given line intersects this rectangle, otherwise false.
+   */
+  def intersectsLine(m: Float, q: Float): Boolean = {
+    val x1 = this.x / m
+    val y1 = this.y - q
+    val x2 = (this.x + this.width) / m
+    val y2 = this.y + this.height - q
+    math.max(math.min(x1, x2), math.min(y1, y2)) <= math.min(math.max(x1, x2), math.max(y1, y2))
+  }
 
+  /**
+   * Returns the intersection point between this rectangle and the line defined by the given point and the given direction.
+   * The returned vector is `(NaN, NaN)` if the given line does not intersect this rectangle.
+   *
+   * @param point A point on the line.
+   * @param direction The direction of the line.
+   * @return The intersection point between this rectangle and the given line.
+   */
   def lineIntersection(point: Vec2f, direction: Vec2f): Vec2f = {
     val t0 = (this.position - point) / direction
     val t1 = (this.end - point) / direction
@@ -288,7 +323,26 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
     }
   }
 
-  def lineIntersection(m: Float, q: Float): Vec2f = this.lineIntersection(Vec2f(0.0f, q), Vec2f(m, 1.0f))
+  /**
+   * Returns the intersection point between this rectangle and the line of equation `y = mx + q`.
+   * The returned vector is `(NaN, NaN)` if the given line does not intersect this rectangle.
+   *
+   * @param m The slope of the line.
+   * @param q The y-intercept of the line.
+   * @return The intersection point between this rectangle and the given line.
+   */
+  def lineIntersection(m: Float, q: Float): Vec2f = {
+    val x1 = this.x / m
+    val y1 = this.y - q
+    val x2 = (this.x + this.width) / m
+    val y2 = this.y + this.height - q
+    val d = math.max(math.min(x1, x2), math.min(y1, y2))
+    if(d <= math.min(math.max(x1, x2), math.max(y1, y2))) {
+      Vec2f(m * d, (q + 1.0f) * d)
+    } else {
+      Vec2f(Float.NaN, Float.NaN)
+    }
+  }
 
   /**
    * Returns a rectangle equivalent to this one with non-negative [[size]] and its [[position]] being the bottom left corner.
@@ -318,7 +372,7 @@ case class Rect2(x: Float, y: Float, width: Float, height: Float) {
    * @param bottom Amount by which the bottom side should grow.
    * @return A copy of this rectangle with all sides extended by the given amounts.
    */
-  def grow(left: Float, top: Float, right: Float, bottom: Float): Rect2 = Rect2(this.x - left, this.y - top, this.width + left + right, this.height + top + bottom)
+  def grow(left: Float, top: Float, right: Float, bottom: Float): Rect2 = Rect2(this.x - left, this.y - bottom, this.width + left + right, this.height + top + bottom)
 
   /**
    * Extends all the sides of this rectangle by the given amount and returns the result.
@@ -550,6 +604,15 @@ object Rect2 {
    * @return The newly instantiated rectangle.
    */
   def apply(width: Float, height: Float): Rect2 = new Rect2(width, height)
+
+  /**
+   * Constructs a rectangle at position `(0, 0)` with the given size.
+   *
+   * Allows to construct a rectangle without using the `new` keyword in Scala.
+   *
+   * @param size The size of the rectangle.
+   */
+  def apply(size: Vec2f): Rect2 = new Rect2(size.x, size.y)
 
   /**
    * Constructs an empty rectangle, whose position and size are both `(0, 0)`.

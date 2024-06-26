@@ -1,5 +1,6 @@
 package io.github.scalamath.geomlib
 
+import io.github.scalamath
 import io.github.scalamath.vecmatlib.{Mat3f, Mat3x4f, Mat4f, Vec3f}
 import org.scalatest.funsuite.AnyFunSuite
 
@@ -30,8 +31,10 @@ class PlaneSuite extends AnyFunSuite {
     assert(plane.d == 4.0f)
   }
 
-  ignore("Distance from point to plane") {
-    // TODO: Distance from point to plane
+  test("Distance from point to plane") {
+    val plane = Plane(1.0f, 2.0f, 3.0f, -4.0f)
+    val point = Vec3f(3.0f, 4.0f, 5.0f)
+    assert(scalamath.equalsApprox(plane.distanceTo(point), 11.0 / 7.0 * math.sqrt(14.0)))
   }
 
   test("Flip plane") {
@@ -170,6 +173,7 @@ class PlaneSuite extends AnyFunSuite {
     val plane1 = Plane(1.0f, 2.0f, 3.0f, 4.0f)
     val plane2 = Plane(0.9999999f, 1.9999999f, 3.0000001f, 4.0000001f)
     val plane3 = -plane1
+    assert(plane1 != plane2)
     assert(plane1 ~= plane2)
     assert(plane3.isCongruentTo(plane1))
     assert(!(plane3 ~= plane1))

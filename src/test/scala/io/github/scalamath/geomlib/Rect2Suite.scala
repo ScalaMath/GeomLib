@@ -33,7 +33,7 @@ class Rect2Suite extends AnyFunSuite {
   }
 
   test("Get rectangle area") {
-    val rect = Rect2(0.0f, 0.0f, 4.0f, 3.0f)
+    val rect = Rect2(4.0f, 3.0f)
     assert(rect.area == 12.0f)
   }
 
@@ -133,6 +133,42 @@ class Rect2Suite extends AnyFunSuite {
     assert(rect1.intersection(rect2) == res)
   }
 
+  test("Check if rectangle intersects line by point and direction") {
+    val rect = Rect2(1.0f, 1.0f, 4.0f, 3.0f)
+    val p1 = Vec2f(0.0f, 0.5f)
+    val d1 = Vec2f(1.0f, 0.3f)
+    assert(rect.intersectsLine(p1, d1))
+    val p2 = Vec2f(6.0f, 5.0f)
+    val d2 = Vec2f(-0.1f, 1.0f)
+    assert(!rect.intersectsLine(p2, d2))
+  }
+
+  test("Check if rectangle intersects line by slope and intercept") {
+    val rect = Rect2(1.0f, 1.0f, 4.0f, 3.0f)
+    assert(rect.intersectsLine(0.3f, 0.5f))
+    assert(!rect.intersectsLine(1.0f, 7.0f))
+  }
+
+  test("Intersection between a rectangle and a line by point and direction") {
+    val rect = Rect2(1.0f, 1.0f, 4.0f, 3.0f)
+    val p1 = Vec2f(0.0f, 0.5f)
+    val d1 = Vec2f(1.0f, 1.0f)
+    val res1 = Vec2f(1.0f, 1.5f)
+    assert(rect.lineIntersection(p1, d1) == res1)
+    val p2 = Vec2f(6.0f, 5.0f)
+    val d2 = Vec2f(-0.1f, 1.0f)
+    val res2 = rect.lineIntersection(p2, d2)
+    assert(res2.x.isNaN && res2.y.isNaN)
+  }
+
+  test("Intersection between a rectangle and a line by slope and intercept") {
+    val rect = Rect2(1.0f, 1.0f, 4.0f, 3.0f)
+    val res1 = Vec2f(1.0f, 1.5f)
+    assert(rect.lineIntersection(1.0f, 0.5f) == res1)
+    val res2 = rect.lineIntersection(1.0f, 7.0f)
+    assert(res2.x.isNaN && res2.y.isNaN)
+  }
+
   test("Rectangle absolute value") {
     val rect1 = Rect2(2.0f, 1.0f, 4.0f, 3.0f)
     val rect2 = Rect2(6.0f, 4.0f, -4.0f, -3.0f)
@@ -185,7 +221,7 @@ class Rect2Suite extends AnyFunSuite {
     val res1 = Rect2(0.0f, 0.0f, 10.0f, 2.0f)
     assert(rect1.expandTo(p1) == res1)
     val res2 = Rect2(-5.0f, 0.0f, 10.0f, 5.0f)
-    assert(res1.expandTo(p2) == res2)
+    assert(rect1.expandTo(p2) == res2)
     val rect2 = Rect2(5.0f, 2.0f, -5.0f, -2.0f)
     assert(rect2.expandTo(p1) == res1)
   }

@@ -14,7 +14,7 @@ scalaVersion := "2.13.12"
 crossPaths := false
 
 // VecMatLib dependency
-libraryDependencies += "io.github.scalamath" % "vecmatlib" % "3.0"
+libraryDependencies += "io.github.scalamath" % "vecmatlib" % "3.1"
 
 // Scala test dependency
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % Test

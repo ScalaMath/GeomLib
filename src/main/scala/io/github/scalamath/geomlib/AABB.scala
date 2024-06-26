@@ -292,11 +292,11 @@ case class AABB(x: Float, y: Float, z: Float, width: Float, height: Float, depth
   }
 
   /**
-   * Returns a [[List]] containing the 8 vertices of this AABB in no particular order.
+   * Returns an immutable [[Set]] containing the 8 vertices of this AABB.
    *
-   * @return A list containing the 8 vertices of this AABB.
+   * @return An immutable set containing the 8 vertices of this AABB.
    */
-  def vertices: List[Vec3f] = List(
+  def vertices: Set[Vec3f] = Set(
     Vec3f(this.x, this.y, this.z),
     Vec3f(this.x, this.y, this.z + depth),
     Vec3f(this.x, this.y + height, this.z),
@@ -316,13 +316,13 @@ case class AABB(x: Float, y: Float, z: Float, width: Float, height: Float, depth
   def intersects(plane: Plane): Boolean = {
     var over = false
     var under = false
-    this.vertices.foreach(vertex => {
+    for(vertex <- this.vertices) {
       if(plane.isPointOver(vertex)) {
         over = true
       } else {
         under = true
       }
-    })
+    }
     under && over
   }
 
