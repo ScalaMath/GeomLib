@@ -1,7 +1,7 @@
 // Project info
 name := "GeomLib"
 homepage := Some(url("https://github.com/ScalaMath/GeomLib"))
-version := "1.0-SNAPSHOT"
+version := "1.0"
 description := "A Scala library for geometry and primitive shapes"
 // Organization info
 organization := "io.github.scalamath"
@@ -17,7 +17,7 @@ crossPaths := false
 libraryDependencies += "io.github.scalamath" % "vecmatlib" % "3.1"
 
 // Scala test dependency
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % Test
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % Test
 // Junit test dependency
 libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.3" % Test
 
